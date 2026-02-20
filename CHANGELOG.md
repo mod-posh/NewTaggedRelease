@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [[0.0.3.3]](https://github.com/mod-posh/NewTaggedRelease/releases/tag/v0.0.3.3) - 2026-02-20
+
+Small change to determining filename, in case a fullpathis sent as filename instead of just filename.
+
+---
+
 ## [[0.0.3.2]](https://github.com/mod-posh/NewTaggedRelease/releases/tag/v0.0.3.2) - 2024-07-18
 
 BUGFIX: Still struggling with booleans, rule of thumb just use strings. Handle the conversion in the script so we can use booleans there.

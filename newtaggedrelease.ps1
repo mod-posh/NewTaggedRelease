@@ -24,7 +24,7 @@ try
  {
   $Name = $Version
  }
- 
+
  [bool]$PreRelease = [System.Convert]::ToBoolean($PreRelease)
 
  if ($verbose.ToLower() -eq 'verbose')
@@ -46,7 +46,12 @@ try
   'Content-Type' = 'application/json'
  }
 
- $ReleaseNotesPath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $FileName
+ # Resolve release notes path (supports relative or absolute)
+ if ([System.IO.Path]::IsPathRooted($FileName)) {
+   $ReleaseNotesPath = $FileName
+ } else {
+   $ReleaseNotesPath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $FileName
+ }
 
  if (Test-Path -Path $ReleaseNotesPath)
  {
