@@ -4,6 +4,9 @@ on:
   milestone:
     types: [closed]
 
+permissions:
+  contents: write
+
 jobs:
   create-release-notes:
     runs-on: ubuntu-latest

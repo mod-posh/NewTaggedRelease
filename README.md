@@ -30,15 +30,21 @@ The PowerShell script uses the GitHub API to create a release. It parses the pro
 There are a few different ways to use this action; here are a few examples to get you started.
 
 ```yaml
+permissions:
+  contents: write
+
 jobs:
   create_release:
-    uses: mod-posh/NewTaggedRelease@v0.0.2.14
+    uses: mod-posh/NewTaggedRelease@v0.0.3.4
     with:
       name: '"Our latest awesome release"'
       version: '"2.0.0"'
       verbose: 'verbose'
       github_token: ${{ secrets.GITHUB_TOKEN }}
 ```
+
+> [!Important]
+> `NewTaggedRelease` needs permission to write repository contents. If the workflow token is missing `contents: write`, GitHub returns a 403/401 and release creation fails.
 
 > [!Note]
 > This example is used directly as part of a larger workflow

@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
-## [[0.0.3.3]](https://github.com/mod-posh/NewTaggedRelease/releases/tag/v0.0.3.3) - 2026-02-20
+## [[0.0.3.4]](https://github.com/mod-posh/NewTaggedRelease/releases/tag/v0.0.3.4) - 2026-08-13
 
 Small change to determining filename, in case a fullpathis sent as filename instead of just filename.
 
