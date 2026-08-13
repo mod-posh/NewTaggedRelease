@@ -17,6 +17,10 @@ try
  $token = $env:GITHUB_TOKEN
  $verbose = $Verbose
 
+ if ([string]::IsNullOrWhiteSpace($token)) {
+  throw "The GITHUB_TOKEN environment variable is empty. Set the 'github_token' input and ensure the workflow has permissions to write repository contents (for example: permissions: { contents: write })."
+ }
+
  $baseUri = 'https://api.github.com/repos'
  $apiUrl = "$($baseUri)/$($repository)/releases"
 
@@ -79,7 +83,44 @@ try
   $jsonPayload | ConvertTo-Json -Depth 10 | Write-Host
  }
 
- Invoke-RestMethod -Uri $apiUrl -Method Post -Body ($jsonPayload | ConvertTo-Json -Depth 10) -Headers $headers
+ try
+ {
+  Invoke-RestMethod -Uri $apiUrl -Method Post -Body ($jsonPayload | ConvertTo-Json -Depth 10) -Headers $headers
+ }
+ catch
+ {
+  $responseBody = ''
+  $statusCode = 0
+
+  if ($_.Exception.Response) {
+   $statusCode = [int]$_.Exception.Response.StatusCode
+   try
+   {
+    $responseStream = $_.Exception.Response.GetResponseStream()
+    if ($null -ne $responseStream)
+    {
+     $reader = [System.IO.StreamReader]::new($responseStream)
+     $responseBody = $reader.ReadToEnd()
+     $reader.Dispose()
+    }
+   }
+   catch
+   {
+    }
+  }
+
+  if ($statusCode -in @(401, 403))
+  {
+   throw "GitHub rejected the token while creating the release. Ensure the workflow/job has 'permissions: contents: write' or provide a token with repository write access. API status: $statusCode. Response: $responseBody"
+  }
+
+  if (-not [string]::IsNullOrWhiteSpace($responseBody))
+  {
+   throw "GitHub rejected the release creation request. Response: $responseBody"
+  }
+
+  throw $_.Exception.Message
+ }
 }
 catch
 {
