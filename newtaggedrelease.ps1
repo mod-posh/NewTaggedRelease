@@ -93,20 +93,25 @@ try
   $statusCode = 0
 
   if ($_.Exception.Response) {
-   $statusCode = [int]$_.Exception.Response.StatusCode
-   try
-   {
-    $responseStream = $_.Exception.Response.GetResponseStream()
+   $resp = $_.Exception.Response
+   $statusCode = [int]$resp.StatusCode
+
+   if ($_.ErrorDetails -and $_.ErrorDetails.Message) {
+    $responseBody = $_.ErrorDetails.Message
+   }
+   elseif ($resp -is [System.Net.Http.HttpResponseMessage]) {
+    $responseBody = $resp.Content.ReadAsStringAsync().GetAwaiter().GetResult()
+   }
+   else {
+    $responseStream = $resp.GetResponseStream()
     if ($null -ne $responseStream)
     {
      $reader = [System.IO.StreamReader]::new($responseStream)
      $responseBody = $reader.ReadToEnd()
      $reader.Dispose()
+     $responseStream.Dispose()
     }
    }
-   catch
-   {
-    }
   }
 
   if ($statusCode -in @(401, 403))
