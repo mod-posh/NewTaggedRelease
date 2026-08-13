@@ -23,6 +23,7 @@ try
 
  $baseUri = 'https://api.github.com/repos'
  $apiUrl = "$($baseUri)/$($repository)/releases"
+ $releaseTagApiUrl = "$($baseUri)/$($repository)/releases/tags/$($Version)"
 
  if ([string]::IsNullOrEmpty($Name))
  {
@@ -85,6 +86,31 @@ try
 
  try
  {
+  $existingRelease = Invoke-RestMethod -Uri $releaseTagApiUrl -Method Get -Headers $headers -ErrorAction Stop
+  if ($existingRelease.tag_name -eq $Version)
+  {
+   if ($verbose.ToLower() -eq 'verbose')
+   {
+    Write-Host "Release for tag '$Version' already exists. Skipping duplicate creation."
+   }
+   return
+  }
+ }
+ catch
+ {
+  $statusCode = 0
+  if ($_.Exception.Response) {
+   $statusCode = [int]$_.Exception.Response.StatusCode
+  }
+
+  if ($statusCode -ne 404)
+  {
+   throw $_.Exception.Message
+  }
+ }
+
+ try
+ {
   Invoke-RestMethod -Uri $apiUrl -Method Post -Body ($jsonPayload | ConvertTo-Json -Depth 10) -Headers $headers
  }
  catch
@@ -117,6 +143,26 @@ try
   if ($statusCode -in @(401, 403))
   {
    throw "GitHub rejected the token while creating the release. Ensure the workflow/job has 'permissions: contents: write' or provide a token with repository write access. API status: $statusCode. Response: $responseBody"
+  }
+
+  if ($statusCode -eq 422 -and $responseBody -match '"code"\s*:\s*"already_exists"' -and $responseBody -match '"field"\s*:\s*"tag_name"')
+  {
+   try
+   {
+    $existingRelease = Invoke-RestMethod -Uri $releaseTagApiUrl -Method Get -Headers $headers -ErrorAction Stop
+    if ($existingRelease.tag_name -eq $Version)
+    {
+     if ($verbose.ToLower() -eq 'verbose')
+     {
+      Write-Host "GitHub reported the tag already existed, but the existing release was found. Skipping duplicate creation."
+     }
+     return
+    }
+   }
+   catch
+   {
+    # The tag or release is not available, so continue with the original error.
+   }
   }
 
   if (-not [string]::IsNullOrWhiteSpace($responseBody))
