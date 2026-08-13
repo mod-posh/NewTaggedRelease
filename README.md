@@ -35,7 +35,7 @@ permissions:
 
 jobs:
   create_release:
-    uses: mod-posh/NewTaggedRelease@v0.0.3.3
+    uses: mod-posh/NewTaggedRelease@v0.0.3.4
     with:
       name: '"Our latest awesome release"'
       version: '"2.0.0"'
